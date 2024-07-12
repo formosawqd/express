@@ -80,4 +80,35 @@ router.get("/protected", (req, res) => {
   }
 });
 
+// 示例数据
+const items = [];
+for (let i = 1; i <= 100; i++) {
+  items.push({
+    id: i,
+    name: `Person ${i}`,
+    age: 20 + (i % 30), // 示例年龄在 20 到 49 之间
+    sex: i % 2 === 0 ? 'male' : 'female',
+    address: `Address ${i}`
+  });
+}
+
+router.post('/getList', (req, res) => {
+  console.log(req.body);
+  const page = parseInt(req.body.page) || 1;
+  const pageSize = parseInt(req.body.pageSize) || 10;
+
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = page * pageSize;
+
+  const paginatedItems = items.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(items.length / pageSize);
+
+  res.json({
+    page,
+    pageSize,
+    totalPages,
+    data: paginatedItems
+  });
+});
+
 module.exports = router;
