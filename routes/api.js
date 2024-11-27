@@ -9,44 +9,43 @@ router.get("/hello", (req, res) => {
   res.send("Hello, World!");
 });
 
-// 用户数据示例
-const users = [
-  { name: "Alice", age: 25, address: "123 Main St", show: true },
-  { name: "Bob", age: 30, address: "456 Maple Ave", show: false },
-  { name: "Charlie", age: 35, address: "789 Oak Dr", show: true },
-];
-
 // 定义 GET /list 接口
 router.get("/list", (req, res) => {
+  // 用户数据示例
+  const users = [
+    { name: "Alice", age: 25, address: "123 Main St", show: true },
+    { name: "Bob", age: 30, address: "456 Maple Ave", show: false },
+    { name: "Charlie", age: 35, address: "789 Oak Dr", show: true },
+  ];
   res.send(users);
 });
 
 // 其他接口可以继续在这里定义
 
-// 设置 multer 存储引擎
+// 配置 multer 存储
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // 文件保存路径
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // 设置上传文件存储的路径
   },
-  filename: (req, file, cb) => {
-    const originalName = Buffer.from(file.originalname, "latin1").toString(
-      "utf8"
-    ); // 处理文件名编码
-    cb(null, Date.now() + "-" + originalName); // 文件名
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // 保证文件名唯一
   },
 });
 
-// 初始化 multer
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
-// 定义文件上传接口
-router.post("/upload", upload.single("file"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send("No file uploaded.");
+// 后端接收多个文件的接口
+router.post("/upload", upload.array("files", 10), (req, res) => {
+  console.log("req", req.files);
+
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ message: "No files uploaded" });
   }
-  res.send({
-    message: "File uploaded successfully!",
-    file: req.file,
+
+  // 返回上传的文件信息
+  res.json({
+    message: "Files uploaded successfully",
+    files: req.files, // 返回上传的文件信息
   });
 });
 
@@ -87,19 +86,20 @@ for (let i = 1; i <= 100; i++) {
     id: i,
     name: `Person ${i}`,
     age: 20 + (i % 30), // 示例年龄在 20 到 49 之间
-    sex: i % 2 === 0 ? 'male' : 'female',
-    address: `Address ${i}`
+    sex: i % 2 === 0 ? "male" : "female",
+    address: `Address ${i}`,
   });
 }
 
-router.post('/getList', (req, res) => {
+router.post("/getList", (req, res) => {
   console.log(req.body);
-  const page = parseInt(req.body.page) || 1;
+  const page = parseInt(req.body.currentPage) || 1;
   const pageSize = parseInt(req.body.pageSize) || 10;
 
   const startIndex = (page - 1) * pageSize;
   const endIndex = page * pageSize;
-
+  console.log(startIndex);
+  console.log(endIndex);
   const paginatedItems = items.slice(startIndex, endIndex);
   const totalPages = Math.ceil(items.length / pageSize);
 
@@ -107,7 +107,7 @@ router.post('/getList', (req, res) => {
     page,
     pageSize,
     totalPages,
-    data: paginatedItems
+    data: paginatedItems,
   });
 });
 
