@@ -3,6 +3,9 @@ const router = express.Router();
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+const crypto = require("crypto");
+const iconv = require("iconv-lite"); // 使用 iconv-lite 进行编码转换
 
 // 定义一个简单的 GET 接口
 router.get("/hello", (req, res) => {
@@ -21,33 +24,6 @@ router.get("/list", (req, res) => {
 });
 
 // 其他接口可以继续在这里定义
-
-// 配置 multer 存储
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // 设置上传文件存储的路径
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // 保证文件名唯一
-  },
-});
-
-const upload = multer({ storage });
-
-// 后端接收多个文件的接口
-router.post("/upload", upload.array("files", 10), (req, res) => {
-  console.log("req", req.files);
-
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ message: "No files uploaded" });
-  }
-
-  // 返回上传的文件信息
-  res.json({
-    message: "Files uploaded successfully",
-    files: req.files, // 返回上传的文件信息
-  });
-});
 
 const SECRET_KEY = "your-very-secure-secret-key";
 
@@ -79,19 +55,18 @@ router.get("/protected", (req, res) => {
   }
 });
 
-// 示例数据
-const items = [];
-for (let i = 1; i <= 100; i++) {
-  items.push({
-    id: i,
-    name: `Person ${i}`,
-    age: 20 + (i % 30), // 示例年龄在 20 到 49 之间
-    sex: i % 2 === 0 ? "male" : "female",
-    address: `Address ${i}`,
-  });
-}
-
 router.post("/getList", (req, res) => {
+  // 示例数据
+  const items = [];
+  for (let i = 1; i <= 100; i++) {
+    items.push({
+      id: i,
+      name: `Person ${i}`,
+      age: 20 + (i % 30), // 示例年龄在 20 到 49 之间
+      sex: i % 2 === 0 ? "male" : "female",
+      address: `Address ${i}`,
+    });
+  }
   console.log(req.body);
   const page = parseInt(req.body.currentPage) || 1;
   const pageSize = parseInt(req.body.pageSize) || 10;
@@ -108,6 +83,78 @@ router.post("/getList", (req, res) => {
     pageSize,
     totalPages,
     data: paginatedItems,
+  });
+});
+
+// 配置上传目录
+const UPLOADS_DIR = path.join(__dirname, "uploads");
+
+// 检查并创建 uploads 目录
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+// 配置 multer 存储
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, UPLOADS_DIR); // 设置上传文件存储的路径
+  },
+  filename: (req, file, cb) => {
+    // 获取原始文件名，并解码（如果需要）
+    const decodedName = decodeURIComponent(file.originalname); // 解码文件名
+
+    // 生成唯一文件名
+    const uniqueName = `${Date.now()}-${crypto
+      .randomBytes(8)
+      .toString("hex")}${path.extname(decodedName)}`;
+
+    // 使用生成的唯一文件名
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({ storage });
+
+// 后端接收多个文件的接口
+router.post("/upload", upload.array("files", 10), (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ message: "No files uploaded" });
+  }
+
+  // 返回上传的文件信息
+  res.json({
+    message: "Files uploaded successfully",
+    files: req.files, // 返回上传的文件信息
+  });
+});
+
+// 获取上传目录中的所有文件接口
+router.get("/files", (req, res) => {
+  fs.readdir(UPLOADS_DIR, (err, files) => {
+    if (err) {
+      console.error("Error reading directory:", err);
+      return res.status(500).json({ message: "Unable to read directory" });
+    }
+
+    // 返回文件列表
+    res.status(200).json({ files });
+  });
+});
+
+// 下载接口
+router.get("/download/:filename", (req, res) => {
+  // 获取参数中的文件名
+  const { filename } = req.params;
+
+  // 定义文件存储路径
+  const filePath = path.join(__dirname, "uploads", filename);
+
+  // 设置文件下载响应
+  res.download(filePath, filename, (err) => {
+    if (err) {
+      // 如果文件不存在或其他错误
+      console.error("File download error:", err);
+      res.status(404).send({ message: "File not found!" });
+    }
   });
 });
 
