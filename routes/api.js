@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const bcrypt = require("bcryptjs");
+
 const crypto = require("crypto");
 const iconv = require("iconv-lite"); // 使用 iconv-lite 进行编码转换
 
@@ -27,19 +29,47 @@ router.get("/list", (req, res) => {
 
 const SECRET_KEY = "your-very-secure-secret-key";
 
+// 登录接口
 router.post("/login", (req, res) => {
-  console.log(req.body);
-  const { username, password } = req.body;
+  // 模拟数据库中的用户数据
+  const users = [
+    {
+      id: 1,
+      username: "user",
+      password: bcrypt.hashSync("password", 8), // 使用 bcrypt 加密密码
+    },
+  ];
 
-  // 在这里进行实际的用户验证，例如检查数据库中的用户名和密码
-  if (username === "formosa" && password === "111111") {
-    const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: "1h" });
-    return res.json({ token });
+  // JWT 秘钥和过期时间
+  const JWT_SECRET = "your_jwt_secret_key";
+  const JWT_EXPIRES_IN = "1h"; // Token 有效期 1 小时
+  const { username, password } = req.body;
+  console.log(req.body);
+  console.log(username);
+  console.log(password);
+
+  // 验证用户名是否存在
+  const user = users.find((u) => u.username === username);
+  if (!user) {
+    return res.status(401).json({ message: "用户名或密码错误" });
   }
 
-  res.status(401).json({ message: "Invalid credentials" });
-});
+  // 验证密码
+  const isPasswordValid = bcrypt.compareSync(password, user.password);
+  if (!isPasswordValid) {
+    return res.status(401).json({ message: "用户名或密码错误" });
+  }
 
+  // 生成 JWT Token
+  const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
+
+  res.status(200).json({
+    message: "登录成功",
+    token,
+  });
+});
 router.get("/protected", (req, res) => {
   const token = req.headers["authorization"];
 

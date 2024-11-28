@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const apiRoutes = require("./routes/api");
-const authRoutes = require("./routes/auth");
 
 // 使用中间件来解析 JSON 请求体
 app.use(express.json());
