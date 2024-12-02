@@ -88,6 +88,14 @@ const storage = multer.diskStorage({
     cb(null, UPLOADS_DIR); // 设置上传文件存储的路径
   },
   filename: (req, file, cb) => {
+    // 这个文件名正常，但是内容乱码了
+    // req.setEncoding("utf-8");
+    // const original_name = Buffer.from(file.originalname, "latin1").toString(
+    //   "utf8"
+    // );
+    // cb(null, original_name); // 自定义文件名
+    // 这个内容正常，但是文件名乱码了
+
     // 获取原始文件名，并解码（如果需要）
     const decodedName = decodeURIComponent(file.originalname); // 解码文件名
 
