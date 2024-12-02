@@ -29,47 +29,6 @@ router.get("/list", (req, res) => {
 
 const SECRET_KEY = "your-very-secure-secret-key";
 
-// 登录接口
-router.post("/login", (req, res) => {
-  // 模拟数据库中的用户数据
-  const users = [
-    {
-      id: 1,
-      username: "user",
-      password: bcrypt.hashSync("password", 8), // 使用 bcrypt 加密密码
-    },
-  ];
-
-  // JWT 秘钥和过期时间
-  const JWT_SECRET = "your_jwt_secret_key";
-  const JWT_EXPIRES_IN = "1h"; // Token 有效期 1 小时
-  const { username, password } = req.body;
-  console.log(req.body);
-  console.log(username);
-  console.log(password);
-
-  // 验证用户名是否存在
-  const user = users.find((u) => u.username === username);
-  if (!user) {
-    return res.status(401).json({ message: "用户名或密码错误" });
-  }
-
-  // 验证密码
-  const isPasswordValid = bcrypt.compareSync(password, user.password);
-  if (!isPasswordValid) {
-    return res.status(401).json({ message: "用户名或密码错误" });
-  }
-
-  // 生成 JWT Token
-  const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
-
-  res.status(200).json({
-    message: "登录成功",
-    token,
-  });
-});
 router.get("/protected", (req, res) => {
   const token = req.headers["authorization"];
 
@@ -188,4 +147,72 @@ router.get("/download/:filename", (req, res) => {
   });
 });
 
+// 登录接口
+router.post("/login", (req, res) => {
+  // 模拟用户数据
+  const users = [
+    {
+      id: 1,
+      username: "admin",
+      password: bcrypt.hashSync("123456", 8), // 使用 bcrypt 加密密码
+      role: "admin",
+    },
+    {
+      id: 1,
+      username: "user",
+      password: bcrypt.hashSync("123456", 8), // 使用 bcrypt 加密密码
+      role: "user",
+    },
+  ];
+
+  // JWT 秘钥和过期时间
+  const JWT_SECRET = "your_jwt_secret_key";
+  const JWT_EXPIRES_IN = "1h"; // Token 有效期 1 小时
+  const { username, password } = req.body;
+  const user = users.find((u) => u.username === username);
+  if (!user) {
+    return res.status(401).json({ message: "用户名或密码错误" });
+  }
+
+  // 生成 JWT Token
+  const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
+  // 验证密码
+  const isPasswordValid = bcrypt.compareSync(
+    bcrypt.hashSync(password, 8),
+    user.password
+  );
+
+  // 一起返回路由
+
+  const routesByRole = {
+    admin: [
+      {
+        key: 1,
+        path: "/home",
+        name: "Home",
+        label: "首页",
+        component: "home",
+        icon: "fund",
+      },
+      {
+        key: 2,
+        path: "/upload",
+        name: "Upload",
+        label: "上传",
+        component: "upload",
+        icon: "fund",
+      },
+    ],
+    user: [{ path: "/products", name: "Products", component: "Products" }],
+  };
+  const role = user.role; // 从请求参数获取角色
+  const routes = routesByRole[role] || [];
+  if (!isPasswordValid) {
+    res.json({ message: "登录成功", role: user.role, token, routes });
+  } else {
+    res.status(401).json({ success: false, message: "Invalid credentials" });
+  }
+});
 module.exports = router;
