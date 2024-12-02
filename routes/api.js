@@ -202,6 +202,7 @@ router.post("/login", (req, res) => {
         name: "Home",
         label: "首页",
         component: "home",
+        meta: { requiresAuth: true }, // 标记需要登录的路由
         icon: "fund",
       },
       {
@@ -211,6 +212,7 @@ router.post("/login", (req, res) => {
         label: "上传",
         component: "upload",
         icon: "fund",
+        meta: { requiresAuth: true }, // 标记需要登录的路由
       },
     ],
     user: [{ path: "/products", name: "Products", component: "Products" }],
