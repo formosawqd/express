@@ -268,50 +268,42 @@ router.get("/getRoute", (req, res) => {
   const routesByRole = {
     admin: [
       {
-        path: "/home",
-        name: "Home",
+        path: "/welcome",
+        name: "Welcome",
         label: "欢迎",
-        component: "home",
-        children: [
-          {
-            path: "/welcome",
-            name: "Welcome",
-            label: "欢迎",
-            component: "welcome",
-            icon: "fund",
-          },
-          {
-            path: "/parent",
-            name: "Parent",
-            component: "parent",
-            icon: "fund",
-            label: "父组件",
-          },
-          {
-            path: "/table",
-            name: "Table",
-            component: "table",
-            icon: "fund",
-            label: "表格",
-          },
-        ],
+        component: "@/views/welcome/welcome.vue",
+        icon: "fund",
       },
       {
-        path: "/upload",
-        name: "upload",
-        label: "上传类",
-        component: "upload",
-        meta: { requiresAuth: true }, // 标记需要登录的路由
-        children: [
-          {
-            path: "/upload",
-            name: "Upload",
-            label: "上传",
-            component: "upload",
-            icon: "upload",
-          },
-        ],
+        path: "/parent",
+        name: "Parent",
+        component: "@/views/parent/parent.vue",
+        icon: "fund",
+        label: "父组件",
       },
+      {
+        path: "/table",
+        name: "Table",
+        component: "@/views/table/table.vue",
+        icon: "fund",
+        label: "表格",
+      },
+      // {
+      //   path: "/upload",
+      //   name: "upload",
+      //   label: "上传类",
+      //   component: "upload",
+      //   meta: { requiresAuth: true }, // 标记需要登录的路由
+      //   children: [
+      //     {
+      //       path: "/upload",
+      //       name: "Upload",
+      //       label: "上传",
+      //       component: "upload",
+      //       icon: "upload",
+      //     },
+      //   ],
+      // },
     ],
     user: [
       {
@@ -338,4 +330,67 @@ router.get("/getRoute", (req, res) => {
   const routes = routesByRole[role] || [];
   res.json({ message: "请求成功", routes });
 });
+
+// 查询菜单接口
+router.get("/getMenu", (req, res) => {
+  // 返回路由
+
+  const menuByRole = {
+    admin: [
+      {
+        path: "/home",
+        menuName: "欢迎",
+        children: [
+          {
+            path: "/welcome",
+            menuName: "欢迎",
+          },
+          {
+            path: "/parent",
+            menuName: "父组件",
+          },
+          {
+            path: "/table",
+            menuName: "表格",
+          },
+        ],
+      },
+      {
+        path: "/upload",
+        menuName: "上传类",
+
+        children: [
+          {
+            path: "/upload",
+            menuName: "上传",
+          },
+        ],
+      },
+    ],
+    user: [
+      {
+        path: "/home",
+        menuName: "Home",
+        label: "首页",
+        component: "home",
+        meta: { requiresAuth: true }, // 标记需要登录的路由
+        icon: "fund",
+      },
+      {
+        path: "/products",
+        icon: "fund",
+        label: "产品",
+        menuName: "Products",
+        component: "Products",
+      },
+    ],
+  };
+  console.log(req.query);
+
+  const user = req.query;
+  const role = user.role; // 从请求参数获取角色
+  const menu = menuByRole[role] || [];
+  res.json({ message: "请求成功", menu });
+});
+
 module.exports = router;
