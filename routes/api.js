@@ -197,36 +197,41 @@ router.post("/login", (req, res) => {
   const routesByRole = {
     admin: [
       {
-        path: "/home",
-        name: "Home",
-        label: "首页",
-        component: "home",
-        meta: { requiresAuth: true }, // 标记需要登录的路由
+        path: "/welcome",
+        name: "Welcome",
+        label: "欢迎",
+        component: "welcome",
         icon: "fund",
-        children: [
-          {
-            path: "/parent",
-            name: "Parent",
-            component: "parent",
-            icon: "fund",
-            label: "父组件",
-          },
-          {
-            path: "/table",
-            name: "Table",
-            component: "table",
-            icon: "fund",
-            label: "表格",
-          },
-        ],
+      },
+      {
+        path: "/parent",
+        name: "Parent",
+        component: "parent",
+        icon: "fund",
+        label: "父组件",
+      },
+      {
+        path: "/table",
+        name: "Table",
+        component: "table",
+        icon: "fund",
+        label: "表格",
       },
       {
         path: "/upload",
-        name: "Upload",
-        label: "上传",
+        name: "upload",
+        label: "上传类",
         component: "upload",
-        icon: "fund",
         meta: { requiresAuth: true }, // 标记需要登录的路由
+        children: [
+          {
+            path: "/upload",
+            name: "Upload",
+            label: "上传",
+            component: "upload",
+            icon: "upload",
+          },
+        ],
       },
     ],
     user: [
