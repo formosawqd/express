@@ -204,6 +204,22 @@ router.post("/login", (req, res) => {
         component: "home",
         meta: { requiresAuth: true }, // 标记需要登录的路由
         icon: "fund",
+        children: [
+          {
+            path: "/parent",
+            name: "Parent",
+            component: "parent",
+            icon: "fund",
+            label: "父组件",
+          },
+          {
+            path: "/table",
+            name: "Table",
+            component: "table",
+            icon: "fund",
+            label: "表格",
+          },
+        ],
       },
       {
         key: 2,
@@ -215,7 +231,25 @@ router.post("/login", (req, res) => {
         meta: { requiresAuth: true }, // 标记需要登录的路由
       },
     ],
-    user: [{ path: "/products", name: "Products", component: "Products" }],
+    user: [
+      {
+        key: 1,
+        path: "/home",
+        name: "Home",
+        label: "首页",
+        component: "home",
+        meta: { requiresAuth: true }, // 标记需要登录的路由
+        icon: "fund",
+      },
+      {
+        key: 3,
+        path: "/products",
+        icon: "fund",
+        label: "产品",
+        name: "Products",
+        component: "Products",
+      },
+    ],
   };
   const role = user.role; // 从请求参数获取角色
   const routes = routesByRole[role] || [];
