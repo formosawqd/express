@@ -197,7 +197,6 @@ router.post("/login", (req, res) => {
   const routesByRole = {
     admin: [
       {
-        key: 1,
         path: "/home",
         name: "Home",
         label: "首页",
@@ -222,7 +221,6 @@ router.post("/login", (req, res) => {
         ],
       },
       {
-        key: 2,
         path: "/upload",
         name: "Upload",
         label: "上传",
@@ -233,7 +231,6 @@ router.post("/login", (req, res) => {
     ],
     user: [
       {
-        key: 1,
         path: "/home",
         name: "Home",
         label: "首页",
@@ -242,7 +239,6 @@ router.post("/login", (req, res) => {
         icon: "fund",
       },
       {
-        key: 3,
         path: "/products",
         icon: "fund",
         label: "产品",
