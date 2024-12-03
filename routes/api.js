@@ -260,4 +260,82 @@ router.post("/login", (req, res) => {
     res.status(401).json({ success: false, message: "Invalid credentials" });
   }
 });
+
+// 登录接口
+router.get("/getRoute", (req, res) => {
+  // 返回路由
+
+  const routesByRole = {
+    admin: [
+      {
+        path: "/home",
+        name: "Home",
+        label: "欢迎",
+        component: "home",
+        children: [
+          {
+            path: "/welcome",
+            name: "Welcome",
+            label: "欢迎",
+            component: "welcome",
+            icon: "fund",
+          },
+          {
+            path: "/parent",
+            name: "Parent",
+            component: "parent",
+            icon: "fund",
+            label: "父组件",
+          },
+          {
+            path: "/table",
+            name: "Table",
+            component: "table",
+            icon: "fund",
+            label: "表格",
+          },
+        ],
+      },
+      {
+        path: "/upload",
+        name: "upload",
+        label: "上传类",
+        component: "upload",
+        meta: { requiresAuth: true }, // 标记需要登录的路由
+        children: [
+          {
+            path: "/upload",
+            name: "Upload",
+            label: "上传",
+            component: "upload",
+            icon: "upload",
+          },
+        ],
+      },
+    ],
+    user: [
+      {
+        path: "/home",
+        name: "Home",
+        label: "首页",
+        component: "home",
+        meta: { requiresAuth: true }, // 标记需要登录的路由
+        icon: "fund",
+      },
+      {
+        path: "/products",
+        icon: "fund",
+        label: "产品",
+        name: "Products",
+        component: "Products",
+      },
+    ],
+  };
+  console.log(req.query);
+
+  const user = req.query;
+  const role = user.role; // 从请求参数获取角色
+  const routes = routesByRole[role] || [];
+  res.json({ message: "请求成功", routes });
+});
 module.exports = router;
