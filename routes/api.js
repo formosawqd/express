@@ -164,12 +164,14 @@ router.post("/login", (req, res) => {
       username: "admin",
       password: bcrypt.hashSync("123456", 8), // 使用 bcrypt 加密密码
       role: "admin",
+      permissions: ["view", "edit", "delete"],
     },
     {
       id: 1,
       username: "user",
       password: bcrypt.hashSync("123456", 8), // 使用 bcrypt 加密密码
       role: "user",
+      permissions: ["view"],
     },
   ];
 
@@ -192,79 +194,20 @@ router.post("/login", (req, res) => {
     user.password
   );
 
-  // 一起返回路由
-
-  const routesByRole = {
-    admin: [
-      {
-        path: "/welcome",
-        name: "Welcome",
-        label: "欢迎",
-        component: "welcome",
-        icon: "fund",
-      },
-      {
-        path: "/parent",
-        name: "Parent",
-        component: "parent",
-        icon: "fund",
-        label: "父组件",
-      },
-      {
-        path: "/table",
-        name: "Table",
-        component: "table",
-        icon: "fund",
-        label: "表格",
-      },
-      {
-        path: "/upload",
-        name: "upload",
-        label: "上传类",
-        component: "upload",
-        meta: { requiresAuth: true }, // 标记需要登录的路由
-        children: [
-          {
-            path: "/upload",
-            name: "Upload",
-            label: "上传",
-            component: "upload",
-            icon: "upload",
-          },
-        ],
-      },
-    ],
-    user: [
-      {
-        path: "/home",
-        name: "Home",
-        label: "首页",
-        component: "home",
-        meta: { requiresAuth: true }, // 标记需要登录的路由
-        icon: "fund",
-      },
-      {
-        path: "/products",
-        icon: "fund",
-        label: "产品",
-        name: "Products",
-        component: "Products",
-      },
-    ],
-  };
-  const role = user.role; // 从请求参数获取角色
-  const routes = routesByRole[role] || [];
   if (!isPasswordValid) {
-    res.json({ message: "登录成功", role: user.role, token, routes });
+    res.json({
+      message: "登录成功",
+      role: user.role,
+      token,
+      permissions: user.permissions,
+    });
   } else {
     res.status(401).json({ success: false, message: "Invalid credentials" });
   }
 });
 
-// 登录接口
+// 路由接口
 router.get("/getRoute", (req, res) => {
-  // 返回路由
-
   const routesByRole = {
     admin: [
       {
@@ -301,6 +244,33 @@ router.get("/getRoute", (req, res) => {
         icon: "upload",
       },
       {
+        path: "/directive",
+        name: "Directive",
+        folder: "directive",
+        file: "directive",
+        label: "指令",
+        component: "directive",
+        icon: "directive",
+      },
+      {
+        path: "/keepalive",
+        name: "Keepalive",
+        folder: "keepalive",
+        file: "keepalive",
+        label: "缓存",
+        component: "keepalive",
+        icon: "keepalive",
+      },
+      {
+        path: "/screenshot",
+        name: "Screenshot",
+        folder: "screenshot",
+        file: "screenshot",
+        label: "截屏",
+        component: "screenshot",
+        icon: "screenshot",
+      },
+      {
         path: "/interview",
         name: "Interview",
         folder: "interview",
@@ -308,6 +278,22 @@ router.get("/getRoute", (req, res) => {
         label: "桶",
         component: "interview",
         icon: "interview",
+      },
+      {
+        path: "/nexttick",
+        name: "Nexttick",
+        folder: "nexttick",
+        file: "nexttick",
+        component: "nexttick",
+        icon: "nexttick",
+      },
+      {
+        path: "/permissions",
+        name: "Permissions",
+        folder: "permissions",
+        file: "permissions",
+        component: "permissions",
+        icon: "permissions",
       },
     ],
     user: [
@@ -319,10 +305,12 @@ router.get("/getRoute", (req, res) => {
         meta: { requiresAuth: true }, // 标记需要登录的路由
       },
       {
-        path: "/products",
-        label: "产品",
-        name: "Products",
-        component: "Products",
+        path: "/permissions",
+        name: "Permissions",
+        folder: "permissions",
+        file: "permissions",
+        component: "permissions",
+        icon: "permissions",
       },
     ],
   };
@@ -335,8 +323,6 @@ router.get("/getRoute", (req, res) => {
 
 // 查询菜单接口
 router.get("/getMenu", (req, res) => {
-  // 返回路由
-
   const menuByRole = {
     admin: [
       {
@@ -358,6 +344,38 @@ router.get("/getMenu", (req, res) => {
             path: "/table",
             menuName: "表格",
             icon: "table",
+          },
+        ],
+      },
+      {
+        path: "/vue",
+        menuName: "vue类",
+        icon: "windows",
+        children: [
+          {
+            path: "/directive",
+            menuName: "指令",
+            icon: "stop",
+          },
+          {
+            path: "/keepalive",
+            menuName: "缓存",
+            icon: "strikethrough",
+          },
+          {
+            path: "/screenshot",
+            menuName: "截屏",
+            icon: "scissor",
+          },
+          {
+            path: "/nexttick",
+            menuName: "nexttick",
+            icon: "scissor",
+          },
+          {
+            path: "/permissions",
+            menuName: "权限",
+            icon: "scissor",
           },
         ],
       },
@@ -397,11 +415,16 @@ router.get("/getMenu", (req, res) => {
         icon: "fund",
       },
       {
-        path: "/products",
+        path: "/permissions",
         icon: "fund",
-        label: "产品",
-        menuName: "Products",
-        component: "Products",
+        menuName: "权限",
+        children: [
+          {
+            path: "/permissions",
+            menuName: "权限",
+            icon: "chrome",
+          },
+        ],
       },
     ],
   };
@@ -412,9 +435,8 @@ router.get("/getMenu", (req, res) => {
   res.json({ message: "请求成功", menu });
 });
 
-// 查询菜单接口
+// 查询题目列表
 router.get("/getInterview", (req, res) => {
-  // 返回路由
   let list = [
     { title: "  vue2和vue3有哪些区别？响应式有什么区别？讲下proxy对象" },
     { title: "说下虚拟DOM和diff算法，key的作用" },
