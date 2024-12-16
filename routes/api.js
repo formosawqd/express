@@ -5,6 +5,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcryptjs");
+const CryptoJS = require("crypto-js");
 
 const crypto = require("crypto");
 const iconv = require("iconv-lite"); // 使用 iconv-lite 进行编码转换
@@ -179,6 +180,11 @@ router.post("/login", (req, res) => {
   const JWT_SECRET = "your_jwt_secret_key";
   const JWT_EXPIRES_IN = "1h"; // Token 有效期 1 小时
   const { username, password } = req.body;
+  // 解密密码
+  const bytes = CryptoJS.AES.decrypt(password, "your-secret-key");
+  const decryptedPassword = bytes.toString(CryptoJS.enc.Utf8);
+  console.log(decryptedPassword);
+
   const user = users.find((u) => u.username === username);
   if (!user) {
     return res.status(401).json({ message: "用户名或密码错误" });
